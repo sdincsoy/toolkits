@@ -1,0 +1,48 @@
+Cisco Catalyst 9200 serisi bir switch'te SSH erişimine izin vermek için aşağıdaki adımları takip edebilirsiniz:
+
+        Öncelikle switch e console dan erişim sağlayın.
+        Switch'e SSH ile uzaktan erişmek için bir yönetici hesabı oluşturun ve gerekli izinleri verin:
+
+switch# configure terminal
+switch(config)# username sysadmin privilege 15 secret your_password
+switch(config)# aaa new-model
+switch(config)# aaa authentication login default local
+switch(config)# line vty 0 15
+switch(config-line)# login authentication default
+switch(config-line)# exit
+switch(config)# end
+
+Yukarıdaki komutlarla "sysadmin" adında bir kullanıcı oluşturulur ve şifresi ayarlanır. Ayrıca, AAA (Authentication, Authorization, and Accounting) ayarları yapılır ve VTY (Virtual Terminal) hatlarında yerel kimlik doğrulama kullanılır.
+
+SSH servisini etkinleştirin:
+
+switch(config)# ip ssh version 2
+switch(config)# ip ssh logging events
+switch(config)# line vty 0 15
+switch(config-line)# transport input ssh
+switch(config-line)# exit
+switch(config)# end
+
+Yukarıdaki komutlarla SSH sürümü 2 kullanılacak şekilde ayarlanır ve VTY hatlarına SSH erişimi sağlanır.
+
+Gerekli ağ ayarlarını yapılandırın:
+
+arduino
+
+switch(config)# interface vlan 1
+switch(config-if)# ip address 192.168.11.10 255.255.255.0
+switch(config-if)# no shutdown
+switch(config-if)# exit
+switch(config)# ip default-gateway 192.168.11.1
+switch(config)# end
+
+Yukarıdaki komutlarla VLAN ayarları ve varsayılan ağ geçidi (gateway) ayarlanır. IP adreslerini kendi ağ yapılandırmanıza göre değiştirmeniz gerekebilir.
+
+Değişiklikleri kaydedin:
+
+
+    switch# copy running-config startup-config
+
+    Yaptığınız yapılandırmaların kalıcı olması için değişiklikleri kaydedin.
+
+Artık Cisco Catalyst 9200 switch'inizde SSH erişimi etkinleştirilmiş olmalıdır. SSH istemcisi kullanarak switch'e erişebilir ve yönetici hesabınızla giriş yapabilirsiniz.
