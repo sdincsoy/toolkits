@@ -1,0 +1,81 @@
+dot1x system-auth-control
+aaa new-model
+
+radius server radius01
+ address ipv4 xx.xx.xx.xx auth-port 1812 acct-port 1813
+ key 7 yourkey
+ radius server radius02
+ address ipv4 xx.xx.xx.xx auth-port 1812 acct-port 1813
+ key 7 yourkey
+!
+tacacs server tacas01
+ address ipv4 xx.xx.xx.xx
+ key 7 yourkey
+ timeout 3
+tacacs server tacacs02
+ address ipv4 xx.xx.xx.xx
+ key 7 yourkey
+ timeout 3
+!
+!
+aaa group server radius NPSGROUP
+ server name radius01
+ server name radius02
+ ip radius source-interface Vlan11
+ deadtime 5
+!
+aaa authentication dot1x default group NPSGROUP
+aaa authorization console
+aaa authorization config-commands
+aaa authorization exec default group TACACSGROUP local if-authenticated 
+aaa authorization commands 7 default group TACACSGROUP local if-authenticated 
+aaa authorization commands 15 default group TACACSGROUP local if-authenticated 
+aaa authorization network default group radius 
+aaa authorization network auth-list group radius 
+aaa authorization auth-proxy default group radius 
+aaa accounting update newinfo periodic 3600
+aaa accounting auth-proxy default start-stop group radius
+aaa accounting dot1x default start-stop group radius
+aaa accounting exec default start-stop group TACACSGROUP
+aaa accounting commands 7 default start-stop group TACACSGROUP
+aaa accounting commands 15 default start-stop group TACACSGROUP
+aaa accounting system default start-stop group radius
+
+
+###Sample port config
+
+interface GigabitEthernet1/0/27
+ description user_801x
+ switchport mode access
+ authentication port-control auto
+ authentication periodic
+ authentication timer reauthenticate server
+ dot1x pae authenticator
+ 
+
+radius-server attribute 6 on-for-login-auth
+radius-server attribute 6 support-multiple
+radius-server attribute 8 include-in-access-req
+radius-server attribute 25 access-request include
+radius-server attribute 31 mac format ietf upper-case
+radius-server attribute 31 send nas-port-detail mac-only
+radius-server dead-criteria time 25 tries 3
+radius-server deadtime 15
+
+ #define macro (optional)
+macro name 8021X_ENABLE
+des user_801x
+switchport mode access
+authentication port-control auto
+dot1x pae authenticator
+authentication periodic
+authentication timer reauthenticate server
+@
+macro name 8021X_DISABLE
+des disable_801x
+no switchport mode access
+no authentication port-control auto
+no dot1x pae authenticator
+no authentication periodic
+no authentication timer reauthenticate server
+@
