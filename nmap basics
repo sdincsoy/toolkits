@@ -48,6 +48,13 @@ Belirli Scriptleri Çalıştırma:
 nmap --script [script1,script2,...] [hedef]
 Bu komut, belirli scriptleri çalıştırmak için kullanılır. Scriptleri virgülle ayırarak belirtmeniz gerekmektedir.
 
+Örnekler;
+nmap --script http-methods -v 192.168.0.1
+map -sV --script vuln* -vvv 192.168.0.1
+nmap --script http* -v 192.168.0.1
+
+
+
 Script Kategorilerini Listeleme:
 nmap --script-help [script-kategori]
 Bu komut, belirli bir script kategorisinin altında bulunan scriptleri listeleyecektir. Örneğin, default veya vuln gibi bir kategori belirtebilirsiniz.
