@@ -1,0 +1,80 @@
+sistemdeki switchlerin yedeklenmesi için linux altında bir script oluşturdum. Bu script i istenildiğinde crontab a ekleyip ototmatik olarak da çalışmasını sağlayabiliriz.
+Kullandigim sistem linux mint 21 dir. bu script baska bir mail sunucu uzerinden aldigimiz yedekleri ekli dosya yaparak mail ile gonderecektir.
+Kurulum işlemleri;
+
+
+bu script i çalıştırmadan önce;
+
+sendemail paketini yüklemek gerekiyor.
+	#sudo apt install sendemail
+
+Daha sonra ssh ile switch lere bağlanıldığında bir hata almanız muhmtemel. key algoritması tutmama ihtimali vardır. bunun için de /tc/ssh/ssh_config dosyasının en altına aşağıdaki gibi eklemek gerekiyor.
+
+#sudo nano /etc/ssh/ssh_config 
+
+HostKeyAlgorithms ssh-rsa
+KexAlgorithms diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1
+
+daha sonra script i oluşturmak gerekiyor. ve bu betiği executable yapmak gerekiyor.
+
+
+#sudo touch switchyedekle.sh
+# sudo chmod +x switchyedekle.sh
+
+dosya oluştuktan sonra içerisine girip aşağıdaki kod u yapıştır. Eğer başka switch eklemek gerekiyor ise switch listesine ekleyip, switch listesinden bunu belirtmek gerekiyor.
+
+#sudo switchyedekle.sh
+
+
+#!/bin/bash
+
+# Switch listesi;
+switch1=192.168.12.11
+switch2=192.168.12.12
+switch3=192.168.12.13
+switch4=192.168.12.14
+
+# Switch listesini belirleyin
+switches=("$switch1" "$switch2" "$switch3" "$switch4")
+
+# E-posta ayarlarını belirleyin
+#FROM_ADDRESS="gondericiadresi@etkialani.com.tr"
+#TO_ADDRESS="aliciadresi@etkialani.com.tr"
+#SMTP_USERNAME="mail hesabi kullanici adi"
+#SMTP_PASSWORD="mail hesabi sifren"
+SUBJECT="Switch Configuration Yedekleri"
+SMTP_SERVER="relay.mailserver.com.tr"
+SMTP_PORT="25"
+
+
+
+# Yedekleri kaydedilecek dizini belirleyin
+BACKUP_DIR="/home/user/switch_backups"
+
+# Tarih formatını belirleyin (Örneğin: YYYY-MM-DD)
+DATE=$(date +%Y-%m-%d)
+
+# Her bir switch için döngüyü çalıştırın
+for switch in "${switches[@]}"
+do
+# SSH ile switch'e bağlanarak yapılandırmayı alın
+sshpass -p "sifre" ssh -o StrictHostKeyChecking=no kullaniciadi@$switch "show running-config" > "$BACKUP_DIR/$switch-$DATE-config.txt"
+done
+
+# sendemail komutunu kullanarak yapılandırma yedeklerini e-posta olarak gönderin
+sendemail -f "gonderen_kisi@etkialanin.com.tr" -t "alici_kisi@etkialanin.com.tr" -u "$SUBJECT" -m "Switch yapilandirma yedekleri ekte bulunmaktadir." -a /home/user/switch_backups/*-config.txt -s "$SMTP_SERVER:$SMTP_PORT"
+
+#switch configlerini silmeden once baska folder a kopyala /istege bagli)
+cp /home/user/switch_backups/*.txt /home/user/Documents/gunlukswitchyedekleri
+
+# Geçici dosyaları temizleyin (isteğe bağlı)
+rm /home/sdincsoy/switch_backups/*.txt
+
+bu script i crontab a eklemek icin;
+(Pazatesi den Cuma ya kadar her gün saat 08:00 de yedek almak için;)
+
+#crontab -e
+nano ile düzenlemeyi secebilirsin,
+
+0 8 * * 1-5 /home/user/switch_yedekle.sh
+
