@@ -1,0 +1,33 @@
+crontab komutunu kullanarak cron görevlerini oluşturmak, düzenlemek ve listelemek için temel komutlar:
+
+    Mevcut crontab görevlerini listelemek için:
+
+crontab -l
+
+Yeni bir crontab görevi oluşturmak veya düzenlemek için:
+
+crontab -e
+
+Etkin olan crontab görevlerini silmek için:
+
+crontab -r
+
+Etkin olan crontab görevlerini kopyalamak için:
+
+    crontab -l | crontab -
+
+crontab -e komutunu çalıştırdığınızda, crontab görevlerini düzenleyebileceğiniz bir metin düzenleyici açılır. Görevleri eklemek veya düzenlemek için şu komutları kullanabilirsiniz:
+
+    Yeni bir crontab görevi eklemek için, her satıra bir görev ekleyin. Görevleri eklerken aşağıdaki formata uygun olmalıdır:
+
+    * * * * * /path/to/command
+
+    Yukarıdaki formatta, her bir * ifadesi belirli bir zaman dilimini temsil eder. Sırasıyla dakika, saat, gün, ay, haftanın günüdür. /path/to/command ise çalıştırılacak komut veya scriptin tam yoludur.
+
+    Düzenleme yaparken mevcut görevleri değiştirebilir veya silmek istediğiniz görevleri satırı silerek kaldırabilirsiniz.
+
+    Düzenleme bittiğinde, metin düzenleyiciden çıkın ve değişiklikler kaydedilecektir.
+
+Crontab görevleri, cron formatına uygun olarak zamanlama seçeneklerine göre düzenlenmelidir. Sıklıkla kullanılan bazı örnekler için "cron formatı" veya "cron expression" şeklinde bir arama yaparak daha fazla bilgi bulabilirsiniz.
+
+Bu temel crontab komutlarıyla zamanlanmış görevlerinizi yönetebilirsiniz. Herhangi bir değişiklik yapmadan önce, önemli görevlerinizin yedeklerini almanız ve dikkatli olmanız önemlidir.
