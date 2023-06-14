@@ -1,0 +1,102 @@
+Nmap (Network Mapper), ağ tarayıcısı ve güvenlik tarama aracı olarak kullanılan popüler bir komut satırı aracıdır. İşletim sisteminize Nmap'i yükledikten sonra aşağıdaki gibi kullanabilirsiniz:
+
+Temel Nmap Kullanımı:
+nmap [hedef]
+
+Örneğin, aşağıdaki komutu kullanarak hedef IP adresi 192.168.0.1 olan bir ağı tarayabilirsiniz:
+nmap 192.168.0.1
+
+Port Taraması:
+nmap -p [port numarası/ler] [hedef]
+
+Örneğin, aşağıdaki komutu kullanarak hedef IP adresi 192.168.0.1 olan bir sistemin belirli portlarını tarayabilirsiniz:
+nmap -p 80,443,22 192.168.0.1
+
+Belirli Bir Port Aralığını Tarama:
+nmap -p [başlangıç portu]-[bitiş portu] [hedef]
+
+Örneğin, aşağıdaki komutu kullanarak hedef IP adresi 192.168.0.1 olan bir sistemin 100 ile 1000 arasındaki portlarını tarayabilirsiniz:
+nmap -p 100-1000 192.168.0.1
+
+Hızlı Tarama:
+nmap -F [hedef]
+
+Örneğin, aşağıdaki komutu kullanarak hedef IP adresi 192.168.0.1 olan bir sistemi hızlı bir şekilde tarayabilirsiniz:
+nmap -F 192.168.0.1
+
+Servis Sürümü Tespiti:
+nmap -sV [hedef]
+
+Örneğin, aşağıdaki komutu kullanarak hedef IP adresi 192.168.0.1 olan bir sistemdeki servislerin sürümlerini tespit edebilirsiniz:
+nmap -sV 192.168.0.1
+
+Detaylı Çıktı:
+nmap -v [hedef]
+
+Örneğin, aşağıdaki komutu kullanarak hedef IP adresi 192.168.0.1 olan bir sistemi tararken daha detaylı bir çıktı alabilirsiniz:
+
+nmap -v 192.168.0.1
+
+Nmap, script tabanlı taramaları gerçekleştirmek için zengin bir komut setine sahiptir. Bu scriptler, ağ cihazları, servisler veya güvenlik açıklarını kontrol etmek gibi çeşitli testler 
+yapmanıza olanak sağlar. İşte Nmap'in script tabanlı taramaları yapmak için kullanılan bazı komutlar:
+
+Script Tabanlı Tarama:
+nmap -sC [hedef]
+Bu komut, hedef sistem üzerinde script tabanlı taramaları gerçekleştirir. Nmap, scriptlerin yanı sıra varsayılan olarak tanımlanan bir dizi popüler scripti çalıştırır.
+
+Belirli Scriptleri Çalıştırma:
+nmap --script [script1,script2,...] [hedef]
+Bu komut, belirli scriptleri çalıştırmak için kullanılır. Scriptleri virgülle ayırarak belirtmeniz gerekmektedir.
+
+Script Kategorilerini Listeleme:
+nmap --script-help [script-kategori]
+Bu komut, belirli bir script kategorisinin altında bulunan scriptleri listeleyecektir. Örneğin, default veya vuln gibi bir kategori belirtebilirsiniz.
+
+Script Çıktısını Ayrıntılı Gösterme:
+nmap --script [script] --script-args [script-argümanları] -v [hedef]
+Bu komut, script çıktısını daha ayrıntılı bir şekilde gösterir. Ek olarak, script için argümanlar belirtebilirsiniz.
+
+Scriptlerin Listesini Görüntüleme:
+ls -la /usr/share/nmap/scripts/
+Bu komut, Nmap'in scriptlerinin bulunduğu dizindeki scriptlerin listesini görüntüler. Bu dizinde çeşitli script kategorilerine ve script dosyalarına erişebilirsiniz.
+
+Nmap ile kullanılabilecek daha detaylı örnekler:
+
+Tüm Script Kategorilerini Listeleme:
+nmap --script-help all
+Bu komut, tüm script kategorilerinin listesini gösterir.
+
+Belirli Bir Script Kategorisine Ait Scriptleri Listeleme:
+nmap --script-help [script-kategori]
+Bu komut, belirli bir script kategorisine ait scriptlerin listesini gösterir. Örneğin, http veya ssl gibi bir kategori belirtebilirsiniz.
+
+Scriptleri Açıklama ve Kullanım Bilgileriyle Birlikte Listeleme:
+nmap --script-help --script [script-adı]
+Bu komut, belirli bir scriptin açıklama ve kullanım bilgileriyle birlikte listelenmesini sağlar. Script adını belirtmeniz gerekmektedir.
+
+Scriptlerin Skript Dili İçinde Geçen Açıklamalarıyla Arama:
+nmap --script-help --script-search [arama-kriteri]
+Bu komut, scriptlerin skript dilinde geçen açıklamalarıyla bir arama yapmanızı sağlar. Örneğin, bir terim veya kelimeyi arayabilirsiniz.
+
+Scriptlerin Çıktıya Etki Seviyesini Belirleme:
+nmap --script [script] --script-args [script-argümanları] --script-trace [hedef]
+Bu komut, scriptlerin çıktıya etki seviyesini belirler ve ayrıntılı bir çıktı sağlar.
+
+Tarama Sonuçlarını XML Dosyasına Kaydetme:
+nmap -oX [dosya-adı.xml] [hedef]
+Bu komut, tarama sonuçlarını belirtilen bir XML dosyasına kaydeder. Daha sonra bu dosyayı inceleyebilir veya başka araçlarla analiz edebilirsiniz.
+
+Bu örnekler, Nmap'in script tabanlı taramalarını gerçekleştirmek için kullanılan bazı temel komutları içermektedir. Daha fazla script seçeneği ve kullanım detayları için 
+nmap --script-help komutunu kullanabilir veya Nmap'in belgelerine başvurabilirsiniz.
+
+
+Sistem güvenliğini sağlamak için Nmap'de bulunan bazı popüler scriptler şunlardır:
+    Vulnerability Assessment: Bu scriptler, yaygın güvenlik açıklarını taramak için kullanılır. Örneğin, vuln, ssl-heartbleed, http-vuln-* gibi scriptler güvenlik açıklarını kontrol eder.
+    Brute Force and Password Cracking: Bu scriptler, şifre denemeleri ve parola kırma saldırılarını simüle etmek için kullanılır. Örneğin, ftp-brute, ssh-brute, smtp-brute gibi scriptler bu tür 
+    saldırıları gerçekleştirir.
+    Discovery and Enumeration: Bu scriptler, ağ keşfi ve hedef sistemlerin bilgi toplama aşamalarında kullanılır. Örneğin, dns-zone-transfer, ssl-cert, ntp-info gibi scriptler sistemler hakkında bilgi sağlar.
+    Denial of Service (DoS) Testing: Bu scriptler, hedef sistemlerin performansını test etmek ve olası DoS saldırılarını belirlemek için kullanılır. Örneğin, syn-flood, udp-flood, http-slowloris gibi scriptler bu tür testleri gerçekleştirir.
+    Bu scriptleri, Nmap'in resmi script veritabanından (Nmap Scripting Engine - NSE) indirebilirsiniz. Nmap'in GitHub deposunda, NSE scriptlerinin kaynak kodlarını içeren birçok script bulunmaktadır: https://github.com/nmap/nmap/tree/master/scripts
+
+Bu depodaki scriptleri indirerek, Nmap ile kullanabilir ve sistem güvenliği testlerinizi gerçekleştirebilirsiniz. 
+Ayrıca, Nmap'in belgelerinde (https://nmap.org/book/nse.html) NSE scriptlerinin kullanımı ve daha fazla bilgiye de ulaşabilirsiniz.
