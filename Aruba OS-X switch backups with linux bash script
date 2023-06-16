@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# Aruba switch lerin IP adreslerini ve yedeklerin kaydedileceği dizini belirtin
+declare -a switches=("192.168.1.1" "192.168.1.2")
+backup_dir="/path/to/backup/directory"
+
+# Her bir switch için döngü oluşturun
+for switch_ip in "${switches[@]}"; do
+    # Switch adını IP adresinden oluşturun
+    switch_name="${switch_ip//./_}"
+    
+    # Yedek dosyasının adını ve yolunu belirleyin
+    backup_file="$backup_dir/$switch_name-$(date +%Y%m%d%H%M%S).cfg"
+    
+    # Switch yedeğini alın
+    ssh admin@$switch_ip "show running-config" > "$backup_file"
+    
+    # Yedekleme işleminin başarılı olduğunu kontrol edin
+    if [ $? -eq 0 ]; then
+        echo "[$switch_ip] Yedekleme başarıyla alındı: $backup_file"
+    else
+        echo "[$switch_ip] Yedekleme alınırken bir hata oluştu"
+    fi
+done
+
+Bu script, switches dizisinde belirttiğiniz Aruba anahtarlarının IP adreslerini ve yedeklerin kaydedileceği dizini alır. Her anahtar için bir döngü oluşturur ve SSH aracılığıyla anahtardan çalışan yapılandırmayı alır. Yedek dosyasının adını IP adresine dayalı bir yapıda oluşturur ve belirtilen yedek dizinine kaydeder.
+
+Scripti kullanabilmek için aşağıdaki adımları izleyin:
+
+    Bir metin düzenleyici açın ve yukarıdaki script örneğini yapıştırın.
+    switches dizisini kendi Aruba anahtarlarınızın IP adresleriyle güncelleyin. İstediğiniz kadar anahtar ekleyebilir veya çıkarabilirsiniz.
+    backup_dir değişkenini yedeklerin kaydedileceği dizin olarak güncelleyin. Örneğin, /home/kullanici/switch_yedekleri gibi bir yol belirtebilirsiniz.
+    Scripti bir dosyaya kaydedin, örneğin switch_yedekle.sh.
+    Terminali açın ve script dosyasının bulunduğu dizine gidin.
+    Script dosyasını çalıştırılabilir yapmak için aşağıdaki komutu kullanın:
+    chmod +x switch_yedekle.sh
+    
+Scripti çalıştırmak için aşağıdaki komutu kullanın:
+./switch_yedekle.sh
+
+Aldığınız yedekleri mail ile relay server üzerinden göndermek isterseniz, ve aynı zamanda bu yedekleri başka bir klasöre kopyaladıktan sonra kendi bilgisayarınızdan silmek isterseniz;
+
+#!/bin/bash
+
+# Aruba switchlerin IP adreslerini ve yedeklerin kaydedileceği dizini belirtin
+declare -a switches=("192.168.1.1" "192.168.1.2")
+backup_dir="/path/to/backup/directory"
+
+# E-posta ayarlarını belirleyin
+email_subject="Aruba Anahtar Yedekleri"
+email_body="Aruba anahtarlarının yedekleri ektedir."
+email_attachment=""
+
+# E-posta gönderme işlemleri için ayarları belirleyin
+email_server="mail.example.com"
+email_port="587"
+email_username="your_username"
+email_password="your_password"
+email_from="sender@example.com"
+email_to="recipient@example.com"
+
+# Her bir switch için döngü oluşturun
+for switch_ip in "${switches[@]}"; do
+    # Switch adını IP adresinden oluşturun
+    switch_name="${switch_ip//./_}"
+    
+    # Yedek dosyasının adını ve yolunu belirleyin
+    backup_file="$backup_dir/$switch_name-$(date +%Y%m%d%H%M%S).cfg"
+    
+    # Switch yedeğini alın
+    ssh admin@$switch_ip "show running-config" > "$backup_file"
+    
+    # Yedekleme işleminin başarılı olduğunu kontrol edin
+    if [ $? -eq 0 ]; then
+        echo "[$switch_ip] Yedekleme başarıyla alındı: $backup_file"
+        
+        # Yedek dosyasını e-posta eki olarak ayarlayın
+        email_attachment="$email_attachment -a $backup_file"
+        
+        # Yedek dosyasını başka bir klasöre kopyalayın
+        cp "$backup_file" "/path/to/another/folder/"
+        
+        # Yedek dosyasını silin
+        rm "$backup_file"
+    else
+        echo "[$switch_ip] Yedekleme alınırken bir hata oluştu"
+    fi
+done
+
+# E-postayı gönderin
+sendemail -f $email_from -t $email_to -u "$email_subject" -m "$email_body" -a $email_attachment -s $email_server:$email_port -xu $email_username -xp $email_password
