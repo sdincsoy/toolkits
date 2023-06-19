@@ -1,6 +1,6 @@
 // Birden fazla VRF de route konfigurasyonu	
 
-// Cisco Nexus switch inizde birden fazli VRF tanımladı iseniz ve her bir VRF için farklı gateway tanımlama ihtiyacınız var ise;
+// Cisco Nexus switch inizde birden fazla VRF tanımladı iseniz ve her bir VRF için farklı gateway tanımlama ihtiyacınız var ise;
 
 vrf context voip
   ip route 0.0.0.0/0 192.168.0.108
