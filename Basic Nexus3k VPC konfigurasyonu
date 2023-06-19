@@ -1,0 +1,111 @@
+// 2 nexus switch arasında 3 adet bağlantı yapılmış durumdadır. Bu bağlantıların 1 tanesi KEEPALIVE icin diger 2 bağlantı PEERLINK için ayrılmıştır.
+
+
+// Creating a vPC Domain
+	You must create identical vPC domain IDs on both the vPC peer devices. This domain ID is used to automatically form the vPC system MAC address.
+	Before you begin
+	Ensure that you have enabled the vPC feature.
+	You must configure both switches on either side of the vPC peer link.
+
+switch1# configure terminal
+switch1(config)# vpc domain 5
+
+interface port-channel1
+  description VPC_PEER_LINK
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+interface Ethernet1/41
+  description VPC_PEER_LINK
+  switchport mode trunk
+  spanning-tree port type network
+  channel-group 1 mode active
+
+interface Ethernet1/42
+  description VPC_PEER_LINK
+  switchport mode trunk
+  spanning-tree port type network
+  channel-group 1 mode active
+
+interface Ethernet1/43
+  description VPC_KEEP_ALIVE
+  no switchport
+  vrf member keep
+  ip address 192.168.20.1/30
+  no shutdown
+
+vpc domain 5
+  peer-switch
+  role priority 100 (diğer switch de priority farklı olmadıdır. Priority si yüksek olan switch master switch gibi davranır.)
+  peer-keepalive destination 192.168.20.2 source 192.168.20.1 vrf keepalive
+  delay restore 5
+  peer-gateway
+  layer3 peer-router
+  auto-recovery reload-delay 60
+  delay restore orphan-port 10
+  
+  // diğer switch ya da cihazlar icin yedekli baglanti yapilacak ise port-channel oluşturulmalı ve VPC numarası tayin edilmelidir. VPC numaraları herbir bağlantı için birbirinden farklı olmalıdır. switch 2 de aynı şekilde ayarlar yapılmalıdır.
+  
+interface port-channel11
+  description uplink_dist_sw
+  switchport mode trunk
+  vpc 11
+
+// Aşağıdaki komut ile VPC keepalive kontrol ediniz.
+
+L3-NEXUS-2# show vpc peer-keepalive 
+
+vPC keep-alive status           : peer is alive                 
+--Peer is alive for             : (154477) seconds, (908) msec
+--Send status                   : Success 
+--Last send at                  : 2011.01.14 19:02:50 100 ms
+--Sent on interface             : Vlan123
+--Receive status                : Success
+--Last receive at               : 2011.01.14 19:02:50 103 ms
+--Received on interface         : Vlan123
+--Last update from peer         : (0) seconds, (524) msec
+
+vPC Keep-alive parameters
+--Destination                   : 192.168.20.1
+--Keepalive interval            : 1000 msec
+--Keepalive timeout             : 5 seconds
+--Keepalive hold timeout        : 3 seconds
+--Keepalive vrf                 : vpc_keepalive
+--Keepalive udp port            : 3200
+--Keepalive tos                 : 192
+
+The services provided by the switch , such as ping, ssh, telnet, 
+radius, are VRF aware. The VRF name need to be configured or 
+specified in order for the correct routing table to be used.
+L3-NEXUS-2# ping 192.168.20.1 vrf vpc_keepalive 
+PING 192.168.20.1 (192.168.20.1): 56 data bytes
+64 bytes from 192.168.20.1: icmp_seq=0 ttl=254 time=3.234 ms
+64 bytes from 192.168.20.1: icmp_seq=1 ttl=254 time=4.931 ms
+64 bytes from 192.168.20.1: icmp_seq=2 ttl=254 time=4.965 ms
+64 bytes from 192.168.20.1: icmp_seq=3 ttl=254 time=4.971 ms
+64 bytes from 192.168.20.1: icmp_seq=4 ttl=254 time=4.915 ms
+
+--- 192.168.20.1 ping statistics ---
+5 packets transmitted, 5 packets received, 0.00% packet loss
+round-trip min/avg/max = 3.234/4.603/4.971 ms
+
+
+// Aşağıdaki komut ile VPC nin sağlık durumu kontrol edilmelidir. "Configuration consistency status : success" çıktısı 2 switch deki config in aynı olduğunu ve sağlıklı çalıştığını gösterir. "mismatch" hatası alıtsanız 2 switch config i aynı değildir.
+
+switch# show vpc brief
+
+vPC domain id : 5
+Peer status : peer adjacency formed ok
+vPC keep-alive status : peer is alive
+Configuration consistency status : success
+Per-vlan consistency status : failed
+Type-2 consistency status : success
+vPC role : secondary
+Number of vPCs configured : 2
+Peer Gateway : Enabled
+Peer gateway excluded VLANs : -
+Dual-active excluded VLANs : -
+Graceful Consistency Check : Enabled
+Auto-recovery status : Enabled (timeout = 240 seconds)
+Operational Layer3 Peer : Enabled
