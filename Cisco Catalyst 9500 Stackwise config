@@ -1,1 +1,54 @@
+kaynak: https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9500/software/release/17-10/configuration_guide/ha/b_1710_ha_9500_cg/configuring_cisco_stackwise_virtual.html
 
+Adım: İlk anahtar üzerinde StackWise modunu etkinleştirin:
+
+/// On Switch 1:
+Device>enable
+Device#configure terminal
+Device(config)#interface HundredGigE1/0/51
+Device(config-if)#stackwise-virtual link 1
+WARNING: All the extraneous configurations will be removed for FortyGigabitEthernet1/1/1 on reboot
+INFO: Upon reboot, the config will be part of running config but not part of start up config.
+Device(config-if)#end
+Device#write memory
+Device#reload
+
+/// On Switch 2:
+Device>enable
+Device#configure terminal
+Device(config)#interface HundredGigE1/0/51
+Device(config-if)#stackwise-virtual link 1
+WARNING: All the extraneous configurations will be removed for FortyGigabitEthernet1/1/1 on reboot
+INFO: Upon reboot, the config will be part of running config but not part of start up config.
+Device(config-if)#end
+Device#write memory
+Device#reload
+
+/// Configuring StackWise Virtual Fast Hello Dual-Active-Detection Link
+
+Device> enable
+Device# configure terminal
+Device(config)# interface TwentyFiveGigE1/0/48
+Device(config-if)# stackwise-virtual dual-active-detection
+Device(config-if)# end
+Device# write memory
+Device# reload
+
+/// Enabling ePAgP Dual-Active-Detection
+Device> enable
+Device# configure terminal
+Device(config)# interface FortyGigabitEthernet 1/0/5
+
+Device(config-if)# channel-group 1 mode desirable 
+Device(config-if)# exit
+Device(config)# interface port-channel 1
+Device(config-if)# shutdown
+Device(config-if)# exit
+Device(config)# stackwise-virtual 
+Device(config-stackwise-virtual)# dual-active detection pagp 
+Device(config-stackwise-virtual)# dual-active detection pagp trust channel-group 1  
+Device(config-stackwise-virtual)# exit
+Device(config)# interface port-channel 1
+Device(config-if)# no shutdown
+Device# write memory
+Device# reload
