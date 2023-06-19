@@ -1,0 +1,206 @@
+Merhaba, 2 adet Aruba 8360 (ArubaOS-CX LL.10.09.0001) switch de VSX confiurasyonu nasıl yapılır?
+
+Öncelikle her iki switch de management interface lerine ip adresi verelim. Bu Management interface leri Out Of Band Management için kullanılabilirsiniz veya keepalive olarak ayarlayabilirsiniz. Ben örneğimde
+ KeepAlive için 1/1/48 i kullanacağım. 2 farklı lokasyonda Datacenter a olduğunu düşünürsek aradaki mesafeden dolayı bakır kullanmak mümkün olmadığından fiber interface kullanmak durumudayım. Sizin senaryonuzda
+ switchlerini birbirine takın ise Mgmt interface lerini KeepAlive olarak kullanabilirsiniz.
+ 
+    Core01# interface mgmt
+    no shutdown
+    ip static 192.168.98.1/24
+    
+    Core02# interface mgmt
+    no shutdown
+    ip static 192.168.98.2/24
+
+Not: Herhangi acil bir durumda bu management interface lerinden switch lere erişiminiz için bunu yapmanızı tavsiye ederim. Başka bir interface e ip vererek de bunu sağlayabilirsiniz.
+
+Switch configurasyonunda kullancağınız sanal MAC adreslerini aşağıdaki aralıklardan seçmeniz tavsiye edilir. Bunlar public olmayan MAC adreslerdir. Bunun dışında kendiniz de belirleyebilirsiniz ancak daha sonra
+sistemde başka bir MAC adres ile çakışma riskiniz olma ihtimali var.
+
+    • x2-xx-xx-xx-xx-xx
+    • x6-xx-xx-xx-xx-xx
+    • xA-xx-xx-xx-xx-xx
+    • xE-xx-xx-xx-xx-xx
+    
+    VSX configurasyon öncesi hazırlıklar;
+    2 adet portumuzu (49 ve 50) LAG olarak ayarlayıp bu iki portu karşılıklı switchleri ISL link olarak ayarlayacağız.
+    Öncelikle LAG i oluşturalım.
+    
+    core01(config)# interface lag 256
+    core01(config-lag-if)# no routing
+    core01(config-lag-if)# no shutdown 
+    core01(config-lag-if)# lacp mode active
+    core01(config-lag-if)# vlan trunk native 1
+    core01(config-lag-if)# exit
+    
+    core01(config)# interface 1/1/49,1/1/50
+    core01(config-if-<1/1/49,1/1/50>)# lag 256
+    core01(config-if-<1/1/49,1/1/50>)# mtu 9198
+    core01(config-if-<1/1/49,1/1/50>)# no shutdown
+    core01(config-if-<1/1/49,1/1/50>)# exit
+    
+    // Create the VRF core01
+core01(config)# vrf KEEPALIVE
+core01(config-vrf)# exit
+
+// KeepAlive ve heartbeat için ayrı bir VLAN ve interface oluşturuyoruz ve KeepAlive için oluşturduğumuz VRF in altına tanımlıyoruz. (core01)
+core01(config)# vlan 999
+core01(config-vlan-999)# name KEEPALIVE
+core01(config-vlan-999)# exit
+
+core01(config)# interface vlan 999
+core01(config-if-vlan)# vrf attach KEEPALIVE
+core01(config-if-vlan)# ip address 10.99.99.1/30
+    
+        // Create the VRF core02
+core02(config)# vrf KEEPALIVE
+core02(config-vrf)# exit
+
+// KeepAlive ve heartbeat için ayrı bir VLAN ve interface oluşturuyoruz ve KeepAlive için oluşturduğumuz VRF in altına tanımlıyoruz. (core02)
+core02(config)# vlan 999
+core02(config-vlan-999)# name KEEPALIVE
+core02(config-vlan-999)# exit
+
+core02(config)# interface vlan 999
+core02(config-if-vlan)# vrf attach KEEPALIVE
+core02(config-if-vlan)# ip address 10.99.99.2/30
+ 
+NOT: Dilerseniz KeepAlive için tamamen ayrı bir interface de kullanabilirsiniz. Bu tamamen sizin elinizdeki kaynaklar ile ilgilidir.
+    
+    VSX Configurasyonu;
+    // Core Switch 1
+core01(config)# vsx
+core01(config-vsx)# system-mac 0A:01:00:00:01:00 
+core01(config-vsx)# inter-switch-link lag 256
+core01(config-vsx)# keepalive peer 10.99.99.2 source 10.99.99.1 vrf KEEPALIVE
+core(config-vsx)# role primary
+core(config-vsx)# vsx-sync mclag-interfaces neighbor ospf snmp ssh static-routes stp-global vrrp vsx-global
+
+    // Core Switch 2
+core02(config)# vsx
+core02(config-vsx)# system-mac 0A:01:00:00:01:00 
+core02(config-vsx)# inter-switch-link lag 256
+core02(config-vsx)# keepalive peer 10.99.99.1 source 10.99.99.2 vrf KEEPALIVE
+core(config-vsx)# role primary
+core(config-vsx)# vsx-sync mclag-interfaces neighbor ospf snmp ssh static-routes stp-global vrrp vsx-global
+
+
+Aşağıdaki şekilde çalıştığını gözlemleyebiliriz;
+
+
+core01(config)# show vsx status
+VSX Operational State
+---------------------
+  ISL channel             : In-Sync
+  ISL mgmt channel        : operational
+  Config Sync Status      : In-Sync
+  NAE                     : peer_reachable
+  HTTPS Server            : peer_reachable
+
+Attribute           Local               Peer
+------------        --------            --------
+ISL link            lag256              lag256
+ISL version         2                   2
+System MAC          0a:01:00:00:01:00   0a:01:00:00:01:00
+Platform            X86-64              X86-64
+Software Version    Virtual.10.08.0001  Virtual.10.08.0001
+Device Role         primary             secondary
+
+core01(config)# show vsx brief
+ISL State                              : In-Sync
+Device State                           : Peer-Established
+Keepalive State                        : Keepalive-Established
+Device Role                            : Primary
+Number of Multi-chassis LAG interfaces : 0
+We can see that everything is reachable and that the switches are in an “In-Sync” state.
+
+Şirket network ümüz için (Sunucu ve Client larimiz) ayrı bir VRF yaratıp oluşturduğumuz Vlan lari bu VRF in içine atayacağız. Dilerseniz Sunucuları ve Client larınız AYRI VRF ler altında toplayabilirsiniz.
+Ber örneğimde 1 tane oluşturdum. Ayrıca switch ile Firewall unuz arasında ayrı bir VLAN oluşturup bütün routing i bu interface üzerinden yapacağız. Siz bütün VLAN larınızı firewall üzerinde sonladıracaksanız 
+configürasyonu buna göre değiştirmeniz gerekmektedir.
+
+// Şirket networkleri için VRF oluşturma;
+
+core01 (config)# vrf CORPNETs
+
+// vlan lari oluşturma
+core01(config)# vlan 5,10,20,30,40
+core01(config-vlan-<10,20,30,40,>)# exit
+
+
+// vlan lara isim vermek;
+core01(config-vlan-10)# name SERVER
+core01(config-vlan-10)# vlan 20
+core01(config-vlan-20)# name CLIENT
+core01(config-vlan-20)# vlan 30 
+core01(config-vlan-30)# name MGMT
+core01(config-vlan-30)# vlan 40
+core01(config-vlan-40)# name VOIP
+
+Vlan ları da oluşturduktan sonra (her 2 switch de aynı şekilde olduğundan emin olun) bu vlan lara interface ip adresi verip, sistemde switch yedekliliğini sağlamak için virtual mac ler ve virtual ip adresleri oluşturacağız.
+Bu şekilde switch in 1 tanesi kapansa dahi sistem tek switch üzerinden çalışmaya devam edecek. (kenar switch ve firewall bağlantılarınızı da buna göre yapmanız gerekmektedir)
+
+// Core01 switch de Vlan lara ip adresi vermek ve virtual mac, virtual ip tanımlamak;
+
+    core01(config)#interface vlan 5 (Bu vlan firewall ile aradaki Layer3 interface olacagindaki VRF altına alınmamıştır)
+    ip address 192.168.5.251/24
+    active-gateway ip mac 0A:01:00:00:00:05
+    active-gateway ip 192.168.5.254
+    
+    core01(config)#interface vlan 10
+    vrf attach CORPNETs
+    ip address 192.168.10.251/24
+    active-gateway ip mac 0A:01:00:00:00:10
+    active-gateway ip 192.168.10.1
+    
+    core01(config)#interface vlan 20
+    vrf attach CORPNETs
+    ip address 192.168.20.251/24
+    active-gateway ip mac 0A:01:00:00:00:20
+    active-gateway ip 192.168.20.1
+    
+    core01(config)#interface vlan 30
+    vrf attach CORPNETs
+    ip address 192.168.30.251/24
+    active-gateway ip mac 0A:01:00:00:00:30
+    active-gateway ip 192.168.30.1
+    
+    core01(config)#interface vlan 40
+    vrf attach CORPNETs
+    ip address 192.168.40.251/24
+    active-gateway ip mac 0A:01:00:00:00:40
+    active-gateway ip 192.168.40.1
+
+// Core02 switch de Vlan lara ip adresi vermek ve virtual mac, virtual ip tanımlamak;
+
+    core02(config)#interface vlan 5 (Bu vlan firewall ile aradaki Layer3 interface olacagindaki VRF altına alınmamıştır)
+    ip address 192.168.5.252/24
+    active-gateway ip mac 0A:01:00:00:00:05
+    active-gateway ip 192.168.5.254
+    
+    core02(config)#interface vlan 10
+    vrf attach CORPNETs
+    ip address 192.168.10.252/24
+    active-gateway ip mac 0A:01:00:00:00:10
+    active-gateway ip 192.168.10.1
+    
+    core02(config)#interface vlan 20
+    vrf attach CORPNETs
+    ip address 192.168.20.252/24
+    active-gateway ip mac 0A:01:00:00:00:20
+    active-gateway ip 192.168.20.1
+    
+    core02(config)#interface vlan 30
+    vrf attach CORPNETs
+    ip address 192.168.30.252/24
+    active-gateway ip mac 0A:01:00:00:00:30
+    active-gateway ip 192.168.30.1
+    
+    core02(config)#interface vlan 40
+    vrf attach CORPNETs
+    ip address 192.168.40.252/24
+    active-gateway ip mac 0A:01:00:00:00:40
+    
+    // Son olarak tüm CORPNETs altına topladığımız network lerimiz için default route ekliyoruz. (firewall ip adresimiz 192.168.5.1)
+    
+    ip route 0.0.0.0/0 192.168.5.1 vrf CORPNETs
+    
