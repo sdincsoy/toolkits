@@ -1,4 +1,4 @@
-Merhaba, 2 adet Aruba 8360 (ArubaOS-CX LL.10.09.0001) switch de VSX confiurasyonu nasıl yapılır?
+Merhaba, 2 adet Aruba 8360 switch de VSX confiurasyonu nasıl yapılır?
 
 Öncelikle her iki switch de management interface lerine ip adresi verelim. Bu Management interface leri Out Of Band Management için kullanılabilirsiniz veya keepalive olarak ayarlayabilirsiniz. Ben örneğimde
  KeepAlive için 1/1/48 i kullanacağım. 2 farklı lokasyonda Datacenter a olduğunu düşünürsek aradaki mesafeden dolayı bakır kullanmak mümkün olmadığından fiber interface kullanmak durumudayım. Sizin senaryonuzda
@@ -39,7 +39,7 @@ sistemde başka bir MAC adres ile çakışma riskiniz olma ihtimali var.
     core01(config-if-<1/1/49,1/1/50>)# no shutdown
     core01(config-if-<1/1/49,1/1/50>)# exit
     
-    // Create the VRF core01
+// core01 switch de VRF oluşturma;
 core01(config)# vrf KEEPALIVE
 core01(config-vrf)# exit
 
@@ -52,7 +52,7 @@ core01(config)# interface vlan 999
 core01(config-if-vlan)# vrf attach KEEPALIVE
 core01(config-if-vlan)# ip address 10.99.99.1/30
     
-        // Create the VRF core02
+// core02 switch de VRF oluşturma;
 core02(config)# vrf KEEPALIVE
 core02(config-vrf)# exit
 
@@ -112,7 +112,7 @@ Device State                           : Peer-Established
 Keepalive State                        : Keepalive-Established
 Device Role                            : Primary
 Number of Multi-chassis LAG interfaces : 0
-We can see that everything is reachable and that the switches are in an “In-Sync” state.
+Her şeyin erişilebilir olduğunu ve switchlerin "Eşleşme Durumunda" olduğunu görebiliyoruz.
 
 Şirket network ümüz için (Sunucu ve Client larimiz) ayrı bir VRF yaratıp oluşturduğumuz Vlan lari bu VRF in içine atayacağız. Dilerseniz Sunucuları ve Client larınız AYRI VRF ler altında toplayabilirsiniz.
 Ber örneğimde 1 tane oluşturdum. Ayrıca switch ile Firewall unuz arasında ayrı bir VLAN oluşturup bütün routing i bu interface üzerinden yapacağız. Siz bütün VLAN larınızı firewall üzerinde sonladıracaksanız 
