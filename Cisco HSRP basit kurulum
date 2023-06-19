@@ -1,0 +1,55 @@
+// Basit olarak HSRP konfigurasyonu
+
+// Switch1;
+
+interface Vlan10
+  description servers
+  no shutdown
+  no ip redirects
+  ip address 192.168.10.251/24
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 10 
+    preempt 
+    priority 200
+    ip 192.168.10.1
+
+
+interface Vlan100
+  description clients
+  no shutdown
+  no ip redirects
+  ip address 192.168.100.251/24
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 100
+    preempt 
+    priority 200
+    ip 192.168.100.1
+
+// Switch2;
+
+interface Vlan10
+  description servers
+  no shutdown
+  no ip redirects
+  ip address 192.168.10.252/24
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 10 
+    preempt 
+    priority 180
+    ip 192.168.10.1
+
+
+interface Vlan100
+  description clients
+  no shutdown
+  no ip redirects
+  ip address 192.168.100.252/24
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 100
+    preempt 
+    priority 180
+    ip 192.168.100.1
