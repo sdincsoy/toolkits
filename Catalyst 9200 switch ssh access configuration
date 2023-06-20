@@ -27,8 +27,6 @@ Yukarıdaki komutlarla SSH sürümü 2 kullanılacak şekilde ayarlanır ve VTY 
 
 Gerekli ağ ayarlarını yapılandırın:
 
-arduino
-
 switch(config)# interface vlan 1
 switch(config-if)# ip address 192.168.11.10 255.255.255.0
 switch(config-if)# no shutdown
