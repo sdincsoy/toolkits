@@ -37,7 +37,8 @@ foreach ($switch in $switchler.GetEnumerator()) {
     $sshKomut = "plink.exe $($switch.Value) -batch -l $username -pw $password sh run"
 
     # Komutu çalistirin ve çiktiyi belirtilen dosyaya kaydedin
-    $dosyaAdi = "{0}_{1}.txt" -f $switch.Key, $tarih
+    $tarih = Get-Date -Format "yyyy-MM-dd"
+    $dosyaAdi = "{0}_{1}_{2}.txt" -f $switch.Key, $switch.Value, $tarih
     Invoke-Expression $sshKomut | Out-File -FilePath (Join-Path $geciciDosyaKlasoru $dosyaAdi) -Encoding UTF8
 }
 
@@ -49,7 +50,7 @@ $mailParametreleri = @{
       From       = "switchyedek@domain.com.tr"
       To         = "aliciadresi@domain.com.tr"
       Subject    = "Switch Konfigurasyon Yedekleri - $tarih"
-      Body       = "switch konfigurasyon yedekleri. Gonderilen switch: $($switch.Key)"
+      Body       = "switch konfigurasyon yedekleri. Yedek Alinan switch sayisi: $($switch.Key)"
       SmtpServer = "smtprelay.domain.com.tr"
     Attachments = (Join-Path $hedefDosyaKlasoru $sikistirilmisDosyaAdi)
 }
