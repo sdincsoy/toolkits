@@ -1,0 +1,59 @@
+###########Nasil Kullanilmali###########
+#Yedek almak istediginiz sunucu ya da client'da puty kurunuz.#
+
+######yedek almak istediginiz switch lere ssh baglantisi yaptiginizda fingerprint i kabul etmek gerekiyor. bu sebepden sadece 1 defalik manual olarak baglandi yapin\
+plink.exe 192.168.2.3 -l kullanici_adiniz -pw sifreniz sh run \
+bu komut sonrasında fingerprint i "y" ile kabul edin.\
+daha sonra asagidaki script sorunsuz calisacaktir. ########
+
+
+# Su anki tarihi alalim ve istedigimiz biçimde biçimlendirelim (örnegin: yil-ay-gün)
+$tarih = Get-Date -Format "yyyy-MM-dd"
+
+# Geçici dosya klasörü ve hedef dosya klasörünü belirleyelim
+$geciciDosyaKlasoru = "C:\temp\"
+$hedefDosyaKlasoru = "C:\SwitchBackups\"
+$sikistirilmisDosyaAdi = "switch_yedekler_$tarih.zip"
+
+# Switchleri bir hashtable olarak tanimlayalim (Anahtar: Switch adi, Deger: IP adresi)
+$switchler = @{
+"switch1" = "192.168.2.3"
+"switch2" = "192.168.2.4"
+"switch3" = "192.168.2.13"
+"switch4" = "192.168.2.14"
+
+# Diger switchler burada listelenmeli
+
+}
+
+
+# SSH baglantisi için kullanici adi ve parolayi belirtin
+$username = "username"
+$password = "password"
+
+# Her bir switch için döngü olusturun
+foreach ($switch in $switchler.GetEnumerator()) {
+    # SSH baglantisi yapmak için plink.exe'yi kullanin (Putty araç setinin bir parçasidir)
+    $sshKomut = "plink.exe $($switch.Value) -batch -l $username -pw $password sh run"
+
+    # Komutu çalistirin ve çiktiyi belirtilen dosyaya kaydedin
+    $dosyaAdi = "{0}_{1}.txt" -f $switch.Key, $tarih
+    Invoke-Expression $sshKomut | Out-File -FilePath (Join-Path $geciciDosyaKlasoru $dosyaAdi) -Encoding UTF8
+}
+
+# Tüm dosyalari bir arsiv dosyasina sikistirin
+Compress-Archive -Path "$geciciDosyaKlasoru\*" -DestinationPath (Join-Path $hedefDosyaKlasoru $sikistirilmisDosyaAdi)
+
+# Sikistirilan dosyayi e-posta ile göndermek için Send-MailMessage cmdlet'ini kullanin
+$mailParametreleri = @{
+      From       = "switchyedek@domain.com.tr"
+      To         = "aliciadresi@domain.com.tr"
+      Subject    = "Switch Konfigurasyon Yedekleri - $tarih"
+      Body       = "switch konfigurasyon yedekleri. Gonderilen switch: $($switch.Key)"
+      SmtpServer = "smtprelay.domain.com.tr"
+    Attachments = (Join-Path $hedefDosyaKlasoru $sikistirilmisDosyaAdi)
+}
+Send-MailMessage @mailParametreleri
+
+# Geçici dosya klasöründeki dosyalari silin
+Remove-Item -Path "$geciciDosyaKlasoru\*" -Force
