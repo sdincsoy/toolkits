@@ -1,0 +1,29 @@
+#conf t
+radius-server host 192.168.1.10 key plaintext password123
+
+aaa group server radius RadiusGroup
+    server 192.168.1.10
+
+
+aaa authentication port-access dot1x authenticator
+enable
+aaa authentication port-access mac-auth
+enable
+
+
+interface 1/1/1-1/1/44
+aaa authentication port-access auth-precedence dot1x mac-auth
+aaa authentication port-access client-limit 3
+aaa authentication port-access dot1x authenticator
+cached-reauth
+cached-reauth-period 60
+max-eapol-requests 1
+max-retries 1
+quiet-period 5
+discovery-period 10
+enable
+exit
+
+aaa authentication port-access mac-auth
+enable
+end
