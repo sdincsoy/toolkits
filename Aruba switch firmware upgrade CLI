@@ -1,0 +1,44 @@
+
+In the CLI
+
+The following steps describe how to upgrade ArubaOS from a TFTP server, FTP server, or a local file.
+	1. 	Download ArubaOS image from the customer support site.
+	2. 	Open an SSH session on your Mobility Master.
+	3. 	Execute the ping command to verify the network connection between the Mobility Master and the SCP server, FTP server , or TFTP server.
+
+(host)# ping <ftphost>
+
+or
+
+(host)# ping <tftphost>
+
+or
+
+(host)# ping <scphost>
+	4. 	Execute the show image version command to check if the ArubaOS image is loaded on the flash partitions. The partition number appears in the Partition row; 0:0 is partition 0, and 0:1 is partition 1. The active boot partition is marked as Default boot.
+
+(host) #show image version 
+	5. 	Execute the copy command to load the new image to the non-boot partition.
+
+(host)# copy ftp: <ftphost> <ftpusername> <image filename> system: partition <0|1>
+
+or
+
+(host)# copy tftp: <tftphost> <image filename> system: partition <0|1>
+
+or
+
+(host)# copy scp: <scphost> <scpusername> <image filename> system: partition <0|1>
+
+or
+
+(host)# copy usb: partition <partition-number> <image filename> system: partition <0|1>
+	6. 	Execute the show image version command to verify that the new image is loaded.
+
+(host)# show image version     
+	7. 	Reboot the Mobility Master.
+
+(host)# reload
+	8. 	Execute the show version command to verify that the upgrade is complete.
+
+(host)# show version 
