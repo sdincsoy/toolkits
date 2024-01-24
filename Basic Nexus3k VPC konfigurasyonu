@@ -37,7 +37,7 @@ interface Ethernet1/43
 
 vpc domain 5
   peer-switch
-  role priority 100 (diğer switch de priority farklı olmadıdır. Priority si düşük olan switch master switch gibi davranır.)
+  role priority 100 (diğer switch de priority farklı olmadıdır. Priority si düşük olan switch master switch gibi davranır.) (https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/nx-os-software/212589-understanding-vpc-election-process.html#toc-hId--1173087723)
   peer-keepalive destination 192.168.20.2 source 192.168.20.1 vrf keepalive
   delay restore 5
   peer-gateway
