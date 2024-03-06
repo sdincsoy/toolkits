@@ -81,7 +81,7 @@ core02(config)# vsx
 core02(config-vsx)# system-mac 0A:01:00:00:01:00 
 core02(config-vsx)# inter-switch-link lag 256
 core02(config-vsx)# keepalive peer 10.99.99.1 source 10.99.99.2 vrf KEEPALIVE
-core(config-vsx)# role primary
+core(config-vsx)# role secondary
 core(config-vsx)# vsx-sync mclag-interfaces neighbor ospf snmp ssh static-routes stp-global vrrp vsx-global
 
 
