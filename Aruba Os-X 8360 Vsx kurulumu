@@ -149,56 +149,56 @@ Bu şekilde switch in 1 tanesi kapansa dahi sistem tek switch üzerinden çalı�
     core01(config)#interface vlan 10
     vrf attach CORPNETs
     ip address 192.168.10.251/24
-    active-gateway ip mac 0A:01:00:00:00:10
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.10.1
     
     core01(config)#interface vlan 20
     vrf attach CORPNETs
     ip address 192.168.20.251/24
-    active-gateway ip mac 0A:01:00:00:00:20
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.20.1
     
     core01(config)#interface vlan 30
     vrf attach CORPNETs
     ip address 192.168.30.251/24
-    active-gateway ip mac 0A:01:00:00:00:30
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.30.1
     
     core01(config)#interface vlan 40
     vrf attach CORPNETs
     ip address 192.168.40.251/24
-    active-gateway ip mac 0A:01:00:00:00:40
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.40.1
 
 // Core02 switch de Vlan lara ip adresi vermek ve virtual mac, virtual ip tanımlamak;
 
     core02(config)#interface vlan 5 (Bu vlan firewall ile aradaki Layer3 interface olacagindaki VRF altına alınmamıştır)
     ip address 192.168.5.252/24
-    active-gateway ip mac 0A:01:00:00:00:05
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.5.254
     
     core02(config)#interface vlan 10
     vrf attach CORPNETs
     ip address 192.168.10.252/24
-    active-gateway ip mac 0A:01:00:00:00:10
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.10.1
     
     core02(config)#interface vlan 20
     vrf attach CORPNETs
     ip address 192.168.20.252/24
-    active-gateway ip mac 0A:01:00:00:00:20
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.20.1
     
     core02(config)#interface vlan 30
     vrf attach CORPNETs
     ip address 192.168.30.252/24
-    active-gateway ip mac 0A:01:00:00:00:30
+    active-gateway ip mac 12:02:00:00:0a:01
     active-gateway ip 192.168.30.1
     
     core02(config)#interface vlan 40
     vrf attach CORPNETs
     ip address 192.168.40.252/24
-    active-gateway ip mac 0A:01:00:00:00:40
+    active-gateway ip mac 12:02:00:00:0a:01
     
     // Son olarak tüm CORPNETs altına topladığımız network lerimiz için default route ekliyoruz. (firewall ip adresimiz 192.168.5.1)
     
