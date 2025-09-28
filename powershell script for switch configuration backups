@@ -6,44 +6,92 @@ plink.exe 192.168.2.3 -l kullanici_adiniz -pw sifreniz sh run \
 bu komut sonrasında fingerprint i "y" ile kabul edin.\
 daha sonra asagidaki script sorunsuz calisacaktir. ########
 
-
-# Su anki tarihi alalim ve istedigimiz biçimde biçimlendirelim (örnegin: yil-ay-gün)
+# Tarihi belirle (örnek: 2025-09-28)
 $tarih = Get-Date -Format "yyyy-MM-dd"
 
-# Geçici dosya klasörü ve hedef dosya klasörünü belirleyelim
+# Klasör yolları
 $geciciDosyaKlasoru = "C:\temp\"
-$hedefDosyaKlasoru = "C:\SwitchBackups\"
+$hedefDosyaKlasoru = "C:\switchbackups\"
 $sikistirilmisDosyaAdi = "switch_yedekler_$tarih.zip"
 
-# Switchleri bir hashtable olarak tanimlayalim (Anahtar: Switch adi, Deger: IP adresi)
+# plink.exe yolu (gerekirse güncelle)
+$plinkPath = "C:\Program Files\PuTTY\plink.exe"
+
+# SSH bilgileriniz
+$username = "switchadmin"
+$password = "asde2313as"
+
+# Switch listesi
 $switchler = @{
-"switch1" = "192.168.2.3"
-"switch2" = "192.168.2.4"
-"switch3" = "192.168.2.13"
-"switch4" = "192.168.2.14"
-
-# Diger switchler burada listelenmeli
-
+    switch1 = "10.145.10.4"
+    switch2 = "10.145.10.5"
+    switch3 = "10.145.10.19"
+    switch4 = "10.145.10.11"
+    switch5 = "10.145.10.26"
+    switch6 = "10.145.10.12"
+    switch7 = "10.145.10.13"
+    switch8 = "10.145.10.14"
+    switch9 = "10.145.10.21"
+    switch10 = "10.145.10.15"
+    switch11 = "10.145.10.16"
+    switch12 = "10.145.10.8"
+    switch13 = "10.145.10.17"
+    switch14 = "10.145.10.33"
+    switch15 = "10.145.10.18"
+    switch16 = "10.145.10.7"
+    switch17 = "10.145.10.9"
+    switch18 = "10.145.10.112"
+    switch19 = "10.145.10.113"
+    switch20 = "10.145.10.117"
+    switch21 = "10.145.10.119"
+    switch22 = "10.145.10.120"
+    switch23 = "10.145.10.121"
+    switch24 = "10.145.10.122"
+    switch25 = "10.145.10.105"
+    switch26 = "10.145.10.106"
+    switch27 = "10.145.10.107"
+    switch28 = "10.145.10.108"
+    switch29 = "10.145.10.109"
+    switch30 = "10.145.10.110"
+    switch31 = "10.145.10.111"
+    switch32 = "10.145.10.114"
+    switch33 = "10.145.10.115"
+    switch34 = "10.145.10.104"
+    switch35 = "10.145.10.116"
+    switch36 = "10.145.10.118"
+    switch37 = "10.145.10.36"
+    switch38 = "10.145.10.37"
+    switch39 = "10.145.10.38"
+    switch40 = "10.145.10.39"
 }
 
+# Hata ayıklama için ayar
+$ErrorActionPreference = "Stop"
 
-# SSH baglantisi için kullanici adi ve parolayi belirtin
-$username = "username"
-$password = "password"
+# Geçici klasörü oluştur (yoksa)
+if (!(Test-Path $geciciDosyaKlasoru)) {
+    New-Item -ItemType Directory -Path $geciciDosyaKlasoru | Out-Null
+}
 
-# Her bir switch için döngü olusturun
+# Switch yedeklerini al
 foreach ($switch in $switchler.GetEnumerator()) {
-    # SSH baglantisi yapmak için plink.exe'yi kullanin (Putty araç setinin bir parçasidir)
-    $sshKomut = "plink.exe $($switch.Value) -batch -l $username -pw $password sh run"
-
-    # Komutu çalistirin ve çiktiyi belirtilen dosyaya kaydedin
-    $tarih = Get-Date -Format "yyyy-MM-dd"
     $dosyaAdi = "{0}_{1}_{2}.txt" -f $switch.Key, $switch.Value, $tarih
-    Invoke-Expression $sshKomut | Out-File -FilePath (Join-Path $geciciDosyaKlasoru $dosyaAdi) -Encoding UTF8
+    $dosyaYolu = Join-Path $geciciDosyaKlasoru $dosyaAdi
+
+    try {
+        & $plinkPath $switch.Value -batch -l $username -pw $password "sh run" | Out-File -FilePath $dosyaYolu -Encoding UTF8
+        Write-Host "Yedek alindi: $($switch.Key) ($($switch.Value))"
+    } catch {
+        Write-Host "HATA: $($switch.Key) için yedek alinamadi."
+        Write-Host $_.Exception.Message
+    }
 }
 
-# Tüm dosyalari bir arsiv dosyasina sikistirin
-Compress-Archive -Path "$geciciDosyaKlasoru\*" -DestinationPath (Join-Path $hedefDosyaKlasoru $sikistirilmisDosyaAdi)
+# ZIP dosyasını oluştur
+Compress-Archive -Path "$geciciDosyaKlasoru\*" -DestinationPath (Join-Path $hedefDosyaKlasoru $sikistirilmisDosyaAdi) -Force
+Write-Host "Tum yedekler sikistirildi: $sikistirilmisDosyaAdi"
+
+
 
 # Sikistirilan dosyayi e-posta ile göndermek için Send-MailMessage cmdlet'ini kullanin
 $mailParametreleri = @{
